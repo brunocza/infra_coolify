@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  clickhouse:
+    container_name: clickhouse-odbc
+    build: .
+    hostname: clickhouse-host
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+      - "9009:9009"
+      - "9126:9126"
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    restart: always
+    mem_limit: ${CLICKHOUSE_MEM_LIMIT}      # define via .env (ex: 5G)
+    cpus:       ${CLICKHOUSE_CPU_LIMIT}      # define via .env (ex: 2.0)
+
+  prometheus:
+    build:
+      context: ./prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    depends_on:
+      - clickhouse
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+
+volumes:
+  clickhouse-data:
+  prometheus-data:
+  grafana-data:
+

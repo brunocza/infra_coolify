@@ -43,6 +43,7 @@
 #                                Default: ''
 #
 # Feel free to modify this file to suit your needs.
+# docker compose --env-file .env up -d
 
 version: '3.8'
 
